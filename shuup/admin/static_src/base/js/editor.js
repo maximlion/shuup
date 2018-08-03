@@ -90,3 +90,5 @@ function activateEditors() {
 $(function () {
     activateEditors();
 });
+
+window.activateSummernoteEditor = activateEditor;

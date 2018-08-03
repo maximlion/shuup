@@ -1,7 +1,22 @@
 {% extends "shuup/front/base.jinja" %}
 
 {% block title %}{{ page.title }}{% endblock %}
-{% block content_title %}{{ page.title }}{% endblock %}
+{% block content_title %}
+    {% if request.session['shuup_xtheme_edit'] %}
+        <input type="text" value="{{ page.title }}" id="title"></textarea>
+        <style>
+            #title {
+                background: transparent;
+                color: black;
+                resize: none;
+                border: 0 none;
+                outline: none;
+            }
+        </style>
+    {% else %}
+        {{ page.title }}
+    {% endif %}
+{% endblock %}
 {% block extrameta %}
 {{ macros.render_metadata(page, page.title, page.get_html(), "page") }}
 {% endblock %}
@@ -14,8 +29,11 @@
         <li class="active">{{ page.title }}</li>
     </ol>
 {% endblock %}
+
 {% block content %}
+    <div class="summernote-editor">
     {{ page.get_html()|safe }}
+    </div>
     {% if page.list_children_on_page %}
         {# TODO: add pagination for children list #}
         {% for child in page.children.visible(request.shop).order_by("-available_from") %}
@@ -29,4 +47,65 @@
         {% endfor %}
     {% endif %}
     {% placeholder "cms_page" %}{% endplaceholder %}
+
+
+
+{% endblock %}
+
+{% block extrajs %}
+    {% if request.session['shuup_xtheme_edit'] %}
+        <a href="../sa/cms/page/{{ page.id }}/"> Edit this page in admin </a>
+        {% set admin_url=shuup.urls.get_url("shuup_admin:dashboard")  %}
+        <script src="{{ static("shuup_admin/js/vendor.js") }}"></script>
+        <script src="{{ static("shuup_admin/js/base.js") }}"></script>
+        {% csrf_token %}
+        <input type="button" onclick="setNextActionAndSubmit" value="clicky" id="submitPage"></button>
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.10/summernote.css" rel="stylesheet">
+        <!-- BUGS WITH THIS:
+            Translations for other languages that are not chosen get deleted,
+            doesn't work with definite-theme -->
+                <script>
+                var ShuupAdminConfig = {{ shuup_admin.get_config()|json }}; //need this to add media to summernote
+                $(document).ready(function() {
+                var $editor = $('.summernote-editor');
+                activateEditor($editor);
+                $('.dropdown-toggle').dropdown(); //summernote dropdowns don't work without this
+                $(document).on("click","#submitPage",function() {
+                    var data = {};
+                    data['csrfmiddlewaretoken'] = window.ShuupAdminConfig.csrf;
+                    var title = document.getElementById("title").value;
+                    var inner = document.getElementsByClassName("note-editable")[0].innerHTML;
+                    var titlename = "base-title__{{ LANGUAGE_CODE }}"; //naming keys that are to be sent
+                    var contentname = "base-content__{{ LANGUAGE_CODE }}";
+                    data[titlename] = encodeURIComponent(title);
+                    data[contentname] = encodeURIComponent(inner);
+                    var available_from = "{{ page.available_from }}".slice(0,-9) //the date given by {{ page.available_from }} has 9 0s at the end so slicing it
+                    data["base-available_from"] = available_from;
+                    data["base-url__{{ LANGUAGE_CODE }}"]= "{{ page.url }}";
+                    data["base-visible_in_menu"] = "{{ page.visible_in_menu }}";
+                    lang_codes = ["en", "fi", "sv", "ja", "zh-hans", "pt-br", "it"]
+                    remove(lang_codes, "{{ LANGUAGE_CODE }}"); //This is when I started fixing the translation issue
+
+                    var dataString = "";
+                    _.forEach(data, function(n, key) {
+                        dataString = dataString + key + "=" + n + "&";
+                    });
+                    $.ajax({
+                        url: '..{{ admin_url }}cms/page/{{ page.id }}/',
+                        type: 'POST',
+                        data: dataString,
+                        processData: true,
+                        contentType: "application/x-www-form-urlencoded"
+                    });
+                });
+                //I've removed page auto-reloading 
+                });
+            </script>
+
+            <script>
+
+
+            </script>
+    {% endif %}
+
 {% endblock %}

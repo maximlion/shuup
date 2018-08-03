@@ -54,14 +54,12 @@
                 <h1 class="page-header">{% block content_title %}{% endblock %}</h1>
             {% endif %}
             <div class="page-content">
-                {% block content %}{% endblock %}
-            </div>
-        </div>
-    </main>
-    {{ render_footer() }}
+
+            {% block content %}{% endblock %}
 
     {# Include JavaScript libraries #}
     <script src="{{ static("shuup/front/js/scripts.js") }}"></script>
+
     {# Include all Extra JavaScript #}
     {% block extrajs %}{% endblock %}
     {# Enable adding products to basket with ajax #}
