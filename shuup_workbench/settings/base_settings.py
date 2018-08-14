@@ -246,5 +246,10 @@ if os.environ.get("SHUUP_WORKBENCH_DISABLE_MIGRATIONS") == "1":
     MIGRATION_MODULES = get_disabled_migrations()
 
 
+THUMBNAIL_DEFAULT_OPTIONS = {
+    "crop": "smart"
+}
+
+
 def configure(setup):
     setup.commit(globals())
