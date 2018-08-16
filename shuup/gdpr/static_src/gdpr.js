@@ -35,7 +35,20 @@
     });
 
     function saveConsent() {
-        $("#consent-form").submit();
+        data = $("#consent-form").serialize();
+        var request = $.ajax({
+            url: $("#consent-form").attr("action"),
+            type: 'POST',
+            data: data,
+            success: function() {
+                var consent_bar = document.getElementsByClassName("gdpr-consent-warn-bar")[0];
+                var privacy_pref = document.getElementsByClassName("gdpr-consent-preferences")[0];
+                consent_bar.outerHTML = "";
+                privacy_pref.outerHTML = ""; // Remove GDPR divs and their content upon successful completion
+                $("body").removeClass("body-noscroll");
+            }
+        });
+
     }
 
     $("#btn-save-preferences").click(() => {
