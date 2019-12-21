@@ -30,7 +30,7 @@ class ShuupReportBase(object):
 
     filename_template = None
     icon = "fa-money"
-
+    report_limit = 2000
     form_class = BaseReportForm
 
     def __init__(self, **kwargs):
